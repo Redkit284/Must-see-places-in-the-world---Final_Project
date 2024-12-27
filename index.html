@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messages</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .message-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    .message {
+      background-color: #fff;
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .message h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .message p {
+      margin: 5px 0;
+    }
+    .message .subject {
+      font-weight: bold;
+      color: #333;
+    }
+    .message .message-content {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    .button {
+      margin-top: 10px;
+      padding: 5px 10px;
+      background-color: red;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .button.update {
+      background-color: blue;
+    }
+  </style>
+</head>
+<body>
+  <h1>Messages</h1>
+  <ul id="message-list" class="message-list">
+    <!-- Messages will be displayed here -->
+  </ul>
+
+  <script>
+    // Fetch messages from the backend API and display them
+    fetch('http://localhost:3000/api/messages')
+      .then(response => response.json())
+      .then(data => {
+        const messageList = document.getElementById('message-list');
+        data.forEach(message => {
+          const messageItem = document.createElement('li');
+          messageItem.classList.add('message');
+          messageItem.innerHTML = `
+            <h2>${message.name} <span>(${message.email})</span></h2>
+            <p class="subject">Subject: ${message.subject}</p>
+            <p class="message-content">${message.message}</p>
+            <button class="button update" onclick="updateMessage('${message._id}')">Update</button>
+            <button class="button" onclick="deleteMessage('${message._id}')">Delete</button>
+          `;
+          messageList.appendChild(messageItem);
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching messages:', error);
+      });
+
+    function deleteMessage(id) {
+      fetch(`http://localhost:3000/api/messages/${id}`, {
+        method: 'DELETE',
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log(data.message);
+        window.location.reload(); // Sayfayı yeniden yükleyerek mesajı sil
+      })
+      .catch(error => console.error('Error deleting message:', error));
+    }
+
+    function updateMessage(id) {
+      const newMessage = prompt('Enter new message text:');
+      if (newMessage) {
+        fetch(`http://localhost:3000/api/messages/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: 'Updated Name',
+            email: 'updatedemail@example.com',
+            subject: 'Updated Subject',
+            message: newMessage
+          }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Updated Message:', data);
+          window.location.reload(); // Sayfayı yeniden yükleyerek güncellenmiş mesajı göster
+        })
+        .catch(error => console.error('Error updating message:', error));
+      }
+    }
+  </script>
+</body>
+</html>
